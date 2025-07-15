@@ -1,0 +1,8 @@
+services:
+  telegram-solat-bot:
+    build: .
+    container_name: telegram-solat-bot
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - CHAT_ID=${CHAT_ID}
+    # restart: unless-stopped
