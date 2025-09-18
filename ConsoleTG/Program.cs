@@ -1,7 +1,8 @@
-﻿using System;
-using System.Net.Http;
+﻿// using System;
+// using System.Net.Http;
+using System.Globalization;
 using System.Text.Json;
-using System.Threading.Tasks;
+// using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 
@@ -12,16 +13,26 @@ class Program
 
     private static readonly string ApiUrl = $"https://api.myquran.com/v2/sholat/jadwal/1212/{DateTime.Now:yyyy/MM/dd}"; // 1212 adalah ID kota Semarang
 
-    static async Task Main(string[] args)
+
+    static async Task Main()
     {
         var botClient = new TelegramBotClient(BotToken);
 
         Console.WriteLine("Bot aktif, mengambil jadwal sholat untuk Semarang...");
 
+        DateTime sekarang = DateTime.Now;
+        var culture = new CultureInfo("id-ID");
+        string date_string = sekarang.ToString("dddd, dd MMMM yyyy 'Pukul' HH:mm 'WIB'", culture);
+
+        string ipAddress = GetLocalIPAddress();
+
         var jadwal = await GetJadwalSholat();
         if (jadwal != null)
         {
-            string message = $"🕌 *Jadwal Sholat Semarang*\n\n" +
+            string message =
+                             $"*{date_string}*\n\n" +
+                             $"*This Is Your IP Address : {ipAddress}*\n\n" +
+                             $"🕌 *Jadwal Sholat Semarang*\n\n" +
                              $"Hari: {jadwal.Date}\n\n" +
                              $"Fajr (Subuh): {jadwal.Subuh}\n" +
                              $"Dhuhr (Dzuhur): {jadwal.Dzuhur}\n" +
@@ -36,6 +47,14 @@ class Program
         {
             Console.WriteLine("Gagal mengambil jadwal sholat.");
         }
+    }
+
+    private static string GetLocalIPAddress()
+    {
+        var host = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName());
+        var ip = host.AddressList.FirstOrDefault(a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+        return ip?.ToString() ?? "IP Tidak Ditemukan";
+        throw new Exception("No network adapters with an IPv4 address in the system!");
     }
 
     private static async Task<JadwalSholat?> GetJadwalSholat()
